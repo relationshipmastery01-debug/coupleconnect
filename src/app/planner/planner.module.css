@@ -1,0 +1,156 @@
+.container {
+    min-height: 100vh;
+    padding: 40px 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: var(--color-text-muted);
+    font-size: 15px;
+    margin-top: 4px;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+}
+
+.formCard {
+    background: var(--color-surface);
+    padding: 30px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 40px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.formCard h2 {
+    font-size: 22px;
+    margin-bottom: 24px;
+}
+
+.eventsList h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border-radius: var(--border-radius-lg);
+}
+
+.eventsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.eventCard {
+    background: var(--color-surface);
+    padding: 20px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    gap: 20px;
+    transition: all var(--transition-base);
+    position: relative;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.eventCard:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.eventIcon {
+    font-size: 48px;
+    flex-shrink: 0;
+}
+
+.eventDetails {
+    flex: 1;
+}
+
+.eventTitle {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.eventType {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--color-surface-light);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--color-primary-light);
+    margin-bottom: 8px;
+}
+
+.eventTime {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+}
+
+.eventDescription {
+    font-size: 14px;
+    color: var(--color-text);
+    opacity: 0.8;
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+.deleteBtn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-error);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.deleteBtn:hover {
+    background: var(--color-error);
+    color: white;
+    transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

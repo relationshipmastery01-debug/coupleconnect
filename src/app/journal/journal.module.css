@@ -1,0 +1,176 @@
+.container {
+    min-height: 100vh;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: var(--color-text-muted);
+    font-size: 15px;
+    margin-top: 4px;
+}
+
+.headerActions {
+    display: flex;
+    gap: 12px;
+}
+
+.formCard {
+    background: var(--color-surface);
+    padding: 30px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 40px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.formCard h2 {
+    font-size: 22px;
+    margin-bottom: 24px;
+}
+
+.checkboxGroup {
+    margin-bottom: 20px;
+}
+
+.checkboxGroup label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--color-text);
+}
+
+.checkboxGroup input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border-radius: var(--border-radius-lg);
+}
+
+.journalsList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.journalCard {
+    background: var(--color-surface);
+    padding: 24px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+    animation: fadeIn 0.4s ease-out;
+}
+
+.journalCard:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.journalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.journalAuthor {
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sharedBadge {
+    padding: 4px 10px;
+    background: hsla(280, 70%, 60%, 0.2);
+    border-radius: 12px;
+    font-size: 11px;
+    color: var(--color-primary-light);
+    font-weight: 500;
+}
+
+.privateBadge {
+    padding: 4px 10px;
+    background: hsla(0, 0%, 50%, 0.2);
+    border-radius: 12px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.journalDate {
+    font-size: 14px;
+    color: var(--color-text-muted);
+}
+
+.journalContent {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    margin-bottom: 16px;
+}
+
+.journalFooter {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 16px;
+}
+
+.sentiment {
+    font-size: 13px;
+    color: var(--color-text-muted);
+}
+
+.sentimentBar {
+    height: 6px;
+    background: var(--color-surface-light);
+    border-radius: 10px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.sentimentFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-error), var(--color-warning), var(--color-success));
+    border-radius: 10px;
+    transition: width var(--transition-slow);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
