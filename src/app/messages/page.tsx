@@ -81,7 +81,7 @@ export default function MessagesPage() {
     const confirmSend = async (useRewrite: boolean) => {
         if (!profile?.relationship_id) return;
 
-        const contentToSend = useRewrite ? currentAnalysis.calm_rewrite : newMessage;
+        const contentToSend = (useRewrite && currentAnalysis) ? currentAnalysis.calm_rewrite : newMessage;
 
         // Insert message
         const { data: msgData } = await supabase
@@ -95,7 +95,7 @@ export default function MessagesPage() {
             .single();
 
         // Insert analysis
-        if (msgData) {
+        if (msgData && currentAnalysis) {
             await supabase.from('message_analysis').insert({
                 message_id: msgData.id,
                 calm_rewrite: currentAnalysis.calm_rewrite,
