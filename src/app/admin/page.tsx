@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, Profile } from '@/lib/supabase';
+import { supabase, Profile, Relationship } from '@/lib/supabase';
 import styles from './admin.module.css';
+
+type Couple = Relationship & { profiles: Profile[] };
 
 export default function AdminPage() {
     const router = useRouter();
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [couples, setCouples] = useState<any[]>([]);
+    const [couples, setCouples] = useState<Couple[]>([]);
     const [users, setUsers] = useState<Profile[]>([]);
     const [showPairForm, setShowPairForm] = useState(false);
     const [pairData, setPairData] = useState({ user1: '', user2: '' });
@@ -16,6 +18,7 @@ export default function AdminPage() {
 
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadData = async () => {
@@ -49,13 +52,13 @@ export default function AdminPage() {
         if (!data) return;
 
         const couplesWithProfiles = await Promise.all(
-            data.map(async (rel) => {
+            data.map(async (rel: Relationship) => {
                 const { data: profiles } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('relationship_id', rel.id);
 
-                return { ...rel, profiles };
+                return { ...rel, profiles: profiles || [] };
             })
         );
 
@@ -156,10 +159,10 @@ export default function AdminPage() {
                             <label>Partner 1</label>
                             <select
                                 value={pairData.user1}
-                                onChange={(e) => setPairData({ ...pairData, user1: e.target.value })}
+                                onChange={(e: ChangeEvent<HTMLSelectElement>) => setPairData({ ...pairData, user1: e.target.value })}
                             >
                                 <option value="">Select user...</option>
-                                {users.filter(u => u.id !== pairData.user2).map(u => (
+                                {users.filter((u: Profile) => u.id !== pairData.user2).map((u: Profile) => (
                                     <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>
                                 ))}
                             </select>
@@ -169,10 +172,10 @@ export default function AdminPage() {
                             <label>Partner 2</label>
                             <select
                                 value={pairData.user2}
-                                onChange={(e) => setPairData({ ...pairData, user2: e.target.value })}
+                                onChange={(e: ChangeEvent<HTMLSelectElement>) => setPairData({ ...pairData, user2: e.target.value })}
                             >
                                 <option value="">Select user...</option>
-                                {users.filter(u => u.id !== pairData.user1).map(u => (
+                                {users.filter((u: Profile) => u.id !== pairData.user1).map((u: Profile) => (
                                     <option key={u.id} value={u.id}>{u.full_name} ({u.email})</option>
                                 ))}
                             </select>
@@ -186,7 +189,7 @@ export default function AdminPage() {
             <div className={styles.section}>
                 <h2>All Couples ({couples.length})</h2>
                 <div className={styles.couplesList}>
-                    {couples.map((couple) => (
+                    {couples.map((couple: Couple) => (
                         <div key={couple.id} className={styles.coupleCard}>
                             <div className={styles.coupleHeader}>
                                 <div className={styles.coupleNames}>
@@ -245,7 +248,7 @@ export default function AdminPage() {
                     <div className={styles.empty}>All users are paired!</div>
                 ) : (
                     <div className={styles.usersList}>
-                        {users.map((user) => (
+                        {users.map((user: Profile) => (
                             <div key={user.id} className={styles.userCard}>
                                 <div>
                                     <strong>{user.full_name}</strong>

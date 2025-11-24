@@ -22,6 +22,7 @@ export default function HabitsPage() {
 
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadData = async () => {
@@ -68,7 +69,7 @@ export default function HabitsPage() {
             // Create habits for this week
             const newHabits = HABIT_TYPES.map(ht => ({
                 relationship_id: relationshipId,
-                type: ht.type as any,
+                type: ht.type as Habit['type'],
                 frequency_goal: ht.goal,
                 week_start_date: weekStartStr,
                 completions: 0,
@@ -94,7 +95,7 @@ export default function HabitsPage() {
             .single();
 
         if (data) {
-            setHabits(prev => prev.map(h => h.id === habitId ? data : h));
+            setHabits((prev: Habit[]) => prev.map((h: Habit) => h.id === habitId ? (data as Habit) : h));
         }
     };
 
@@ -109,7 +110,7 @@ export default function HabitsPage() {
             .single();
 
         if (data) {
-            setHabits(prev => prev.map(h => h.id === habitId ? data : h));
+            setHabits((prev: Habit[]) => prev.map((h: Habit) => h.id === habitId ? (data as Habit) : h));
         }
     };
 
@@ -174,7 +175,7 @@ export default function HabitsPage() {
             </div>
 
             <div className={styles.summary}>
-                <h2>This Week's Progress</h2>
+                <h2>This Week&apos;s Progress</h2>
                 <div className={styles.summaryStats}>
                     <div className={styles.stat}>
                         <div className={styles.statValue}>

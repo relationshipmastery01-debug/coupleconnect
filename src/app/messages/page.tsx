@@ -3,16 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, Profile, Message, MessageAnalysis } from '@/lib/supabase';
-import { analyzeMessage } from '@/lib/interpreter';
+import { analyzeMessage, AnalysisResult } from '@/lib/interpreter';
 import styles from './messages.module.css';
 
 export default function MessagesPage() {
     const router = useRouter();
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<(Message & { profiles: { full_name: string }, message_analysis: MessageAnalysis })[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [showAnalysis, setShowAnalysis] = useState(false);
-    const [currentAnalysis, setCurrentAnalysis] = useState<any>(null);
+    const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,6 +27,7 @@ export default function MessagesPage() {
         return () => {
             subscription.unsubscribe();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadData = async () => {

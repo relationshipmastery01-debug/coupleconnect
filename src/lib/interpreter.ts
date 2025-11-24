@@ -1,6 +1,6 @@
 // Rule-based Emotional Interpreter - No external APIs required
 
-type AnalysisResult = {
+export type AnalysisResult = {
     calm_rewrite: string;
     emotional_tone: string;
     detected_needs: string[];

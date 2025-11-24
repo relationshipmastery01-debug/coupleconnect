@@ -68,3 +68,14 @@ export type Journal = {
     sentiment_score: number;
     created_at: string;
 };
+
+export type Insight = {
+    week_start_date: string;
+    total_messages: number;
+    avg_conflict_score: number;
+    dominant_emotions: string[];
+    common_needs: string[];
+    habit_completion: Record<string, number>;
+    strengths: string[];
+    suggestions: string[];
+};

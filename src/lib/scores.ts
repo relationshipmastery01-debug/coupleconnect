@@ -1,6 +1,6 @@
 // Logic for calculating relationship scores
 
-import { supabase, Message, Habit, Journal } from './supabase';
+import { supabase, Message, Habit, Journal, Insight } from './supabase';
 
 export async function calculateRelationshipScores(relationshipId: string) {
     // Get last 30 days of data
@@ -49,7 +49,7 @@ export async function calculateRelationshipScores(relationshipId: string) {
     let connectionScore = 50;
 
     if (habits && habits.length > 0) {
-        const completionRate = habits.reduce((sum, habit) => {
+        const completionRate = habits.reduce((sum: number, habit: any) => {
             return sum + (habit.completions / habit.frequency_goal);
         }, 0) / habits.length;
 
@@ -69,10 +69,10 @@ export async function calculateRelationshipScores(relationshipId: string) {
 
     // Based on consistency over time
     if (habits && habits.length > 0) {
-        const allHabitsComplete = habits.every(habit => habit.completions >= habit.frequency_goal);
+        const allHabitsComplete = habits.every((habit: any) => habit.completions >= habit.frequency_goal);
         if (allHabitsComplete) commitmentScore = 90;
         else {
-            const avgCompletion = habits.reduce((sum, h) => sum + h.completions, 0) / habits.length;
+            const avgCompletion = habits.reduce((sum: number, h: any) => sum + h.completions, 0) / habits.length;
             commitmentScore = Math.round(50 + (avgCompletion * 5));
         }
     }
@@ -99,7 +99,7 @@ export async function calculateRelationshipScores(relationshipId: string) {
     };
 }
 
-export async function generateWeeklyInsights(relationshipId: string) {
+export async function generateWeeklyInsights(relationshipId: string): Promise<Insight> {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
@@ -122,7 +122,7 @@ export async function generateWeeklyInsights(relationshipId: string) {
         .gte('created_at', weekAgo.toISOString());
 
     // Analyze patterns
-    const insights: any = {
+    const insights: Insight = {
         week_start_date: weekAgo.toISOString().split('T')[0],
         total_messages: messages?.length || 0,
         avg_conflict_score: 0,
@@ -187,7 +187,7 @@ export async function generateWeeklyInsights(relationshipId: string) {
     if (insights.total_messages > 20) {
         insights.strengths.push('High engagement and communication frequency');
     }
-    const habitCompletionAvg = Object.values(insights.habit_completion).reduce((a: any, b: any) => a + b, 0) / Object.keys(insights.habit_completion).length;
+    const habitCompletionAvg = Object.values(insights.habit_completion).reduce((a: number, b: number) => a + b, 0) / Object.keys(insights.habit_completion).length;
     if (habitCompletionAvg > 80) {
         insights.strengths.push('Excellent habit consistency');
     }

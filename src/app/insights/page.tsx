@@ -2,18 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, Profile } from '@/lib/supabase';
+import { supabase, Profile, Insight } from '@/lib/supabase';
 import { generateWeeklyInsights } from '@/lib/scores';
 import styles from './insights.module.css';
 
 export default function InsightsPage() {
     const router = useRouter();
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [insights, setInsights] = useState<any>(null);
+    const [insights, setInsights] = useState<Insight | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadData = async () => {
@@ -140,7 +141,7 @@ export default function InsightsPage() {
                 <div className={styles.section}>
                     <h2>✅ Habit Completion</h2>
                     <div className={styles.habitGrid}>
-                        {Object.entries(insights.habit_completion || {}).map(([habit, rate]: [string, any]) => (
+                        {Object.entries(insights.habit_completion || {}).map(([habit, rate]) => (
                             <div key={habit} className={styles.habitBox}>
                                 <div className={styles.habitName}>{habit.replace('_', ' ')}</div>
                                 <div className={styles.habitRate}>{rate}%</div>
@@ -179,7 +180,7 @@ export default function InsightsPage() {
                                 </div>
                             ))
                         ) : (
-                            <p className={styles.muted}>You're doing great! Keep it up.</p>
+                            <p className={styles.muted}>You&apos;re doing great! Keep it up.</p>
                         )}
                     </div>
                 </div>

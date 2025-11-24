@@ -24,9 +24,15 @@ CREATE TABLE IF NOT EXISTS public.relationships (
 );
 
 -- Add foreign key to profiles
-ALTER TABLE public.profiles
-ADD CONSTRAINT fk_relationship
-FOREIGN KEY (relationship_id) REFERENCES public.relationships(id) ON DELETE SET NULL;
+-- Add foreign key to profiles (safely)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_relationship') THEN
+        ALTER TABLE public.profiles
+        ADD CONSTRAINT fk_relationship
+        FOREIGN KEY (relationship_id) REFERENCES public.relationships(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- Create messages table
 CREATE TABLE IF NOT EXISTS public.messages (
@@ -123,14 +129,17 @@ ALTER TABLE public.insights ENABLE ROW LEVEL SECURITY;
 -- ============================================
 
 -- Users can view their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
 
 -- Users can update their own profile
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
 
 -- Admins can view all profiles
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
 CREATE POLICY "Admins can view all profiles" ON public.profiles
   FOR SELECT USING (
     EXISTS (
@@ -140,6 +149,7 @@ CREATE POLICY "Admins can view all profiles" ON public.profiles
   );
 
 -- Admins can update all profiles
+DROP POLICY IF EXISTS "Admins can update all profiles" ON public.profiles;
 CREATE POLICY "Admins can update all profiles" ON public.profiles
   FOR UPDATE USING (
     EXISTS (
@@ -149,6 +159,7 @@ CREATE POLICY "Admins can update all profiles" ON public.profiles
   );
 
 -- Allow insert for new users (during signup)
+DROP POLICY IF EXISTS "Allow insert for authenticated users" ON public.profiles;
 CREATE POLICY "Allow insert for authenticated users" ON public.profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
@@ -157,6 +168,7 @@ CREATE POLICY "Allow insert for authenticated users" ON public.profiles
 -- ============================================
 
 -- Partners can view their own relationship
+DROP POLICY IF EXISTS "Partners can view own relationship" ON public.relationships;
 CREATE POLICY "Partners can view own relationship" ON public.relationships
   FOR SELECT USING (
     EXISTS (
@@ -167,6 +179,7 @@ CREATE POLICY "Partners can view own relationship" ON public.relationships
   );
 
 -- Partners can update their own relationship
+DROP POLICY IF EXISTS "Partners can update own relationship" ON public.relationships;
 CREATE POLICY "Partners can update own relationship" ON public.relationships
   FOR UPDATE USING (
     EXISTS (
@@ -177,6 +190,7 @@ CREATE POLICY "Partners can update own relationship" ON public.relationships
   );
 
 -- Admins can do everything with relationships
+DROP POLICY IF EXISTS "Admins have full access to relationships" ON public.relationships;
 CREATE POLICY "Admins have full access to relationships" ON public.relationships
   FOR ALL USING (
     EXISTS (
@@ -190,6 +204,7 @@ CREATE POLICY "Admins have full access to relationships" ON public.relationships
 -- ============================================
 
 -- Partners can view messages in their relationship
+DROP POLICY IF EXISTS "Partners can view own relationship messages" ON public.messages;
 CREATE POLICY "Partners can view own relationship messages" ON public.messages
   FOR SELECT USING (
     EXISTS (
@@ -200,6 +215,7 @@ CREATE POLICY "Partners can view own relationship messages" ON public.messages
   );
 
 -- Partners can insert messages in their relationship
+DROP POLICY IF EXISTS "Partners can insert messages" ON public.messages;
 CREATE POLICY "Partners can insert messages" ON public.messages
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -210,6 +226,7 @@ CREATE POLICY "Partners can insert messages" ON public.messages
   );
 
 -- Admins can view all messages
+DROP POLICY IF EXISTS "Admins can view all messages" ON public.messages;
 CREATE POLICY "Admins can view all messages" ON public.messages
   FOR ALL USING (
     EXISTS (
@@ -219,6 +236,7 @@ CREATE POLICY "Admins can view all messages" ON public.messages
   );
 
 -- Message analysis policies (same as messages)
+DROP POLICY IF EXISTS "Partners can view message analysis" ON public.message_analysis;
 CREATE POLICY "Partners can view message analysis" ON public.message_analysis
   FOR SELECT USING (
     EXISTS (
@@ -229,6 +247,7 @@ CREATE POLICY "Partners can view message analysis" ON public.message_analysis
     )
   );
 
+DROP POLICY IF EXISTS "Partners can insert message analysis" ON public.message_analysis;
 CREATE POLICY "Partners can insert message analysis" ON public.message_analysis
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -239,6 +258,7 @@ CREATE POLICY "Partners can insert message analysis" ON public.message_analysis
     )
   );
 
+DROP POLICY IF EXISTS "Admins can view all message analysis" ON public.message_analysis;
 CREATE POLICY "Admins can view all message analysis" ON public.message_analysis
   FOR ALL USING (
     EXISTS (
@@ -252,6 +272,7 @@ CREATE POLICY "Admins can view all message analysis" ON public.message_analysis
 -- ============================================
 
 -- Partners can view/modify habits in their relationship
+DROP POLICY IF EXISTS "Partners can view own habits" ON public.habits;
 CREATE POLICY "Partners can view own habits" ON public.habits
   FOR SELECT USING (
     EXISTS (
@@ -261,6 +282,7 @@ CREATE POLICY "Partners can view own habits" ON public.habits
     )
   );
 
+DROP POLICY IF EXISTS "Partners can modify own habits" ON public.habits;
 CREATE POLICY "Partners can modify own habits" ON public.habits
   FOR ALL USING (
     EXISTS (
@@ -271,6 +293,7 @@ CREATE POLICY "Partners can modify own habits" ON public.habits
   );
 
 -- Admins have full access to habits
+DROP POLICY IF EXISTS "Admins have full access to habits" ON public.habits;
 CREATE POLICY "Admins have full access to habits" ON public.habits
   FOR ALL USING (
     EXISTS (
@@ -280,6 +303,7 @@ CREATE POLICY "Admins have full access to habits" ON public.habits
   );
 
 -- Events policies (same pattern)
+DROP POLICY IF EXISTS "Partners can view own events" ON public.events;
 CREATE POLICY "Partners can view own events" ON public.events
   FOR SELECT USING (
     EXISTS (
@@ -289,6 +313,7 @@ CREATE POLICY "Partners can view own events" ON public.events
     )
   );
 
+DROP POLICY IF EXISTS "Partners can modify own events" ON public.events;
 CREATE POLICY "Partners can modify own events" ON public.events
   FOR ALL USING (
     EXISTS (
@@ -298,6 +323,7 @@ CREATE POLICY "Partners can modify own events" ON public.events
     )
   );
 
+DROP POLICY IF EXISTS "Admins have full access to events" ON public.events;
 CREATE POLICY "Admins have full access to events" ON public.events
   FOR ALL USING (
     EXISTS (
@@ -307,6 +333,7 @@ CREATE POLICY "Admins have full access to events" ON public.events
   );
 
 -- Insights policies
+DROP POLICY IF EXISTS "Partners can view own insights" ON public.insights;
 CREATE POLICY "Partners can view own insights" ON public.insights
   FOR SELECT USING (
     EXISTS (
@@ -316,6 +343,7 @@ CREATE POLICY "Partners can view own insights" ON public.insights
     )
   );
 
+DROP POLICY IF EXISTS "Partners can insert own insights" ON public.insights;
 CREATE POLICY "Partners can insert own insights" ON public.insights
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -325,6 +353,7 @@ CREATE POLICY "Partners can insert own insights" ON public.insights
     )
   );
 
+DROP POLICY IF EXISTS "Admins have full access to insights" ON public.insights;
 CREATE POLICY "Admins have full access to insights" ON public.insights
   FOR ALL USING (
     EXISTS (
@@ -338,10 +367,12 @@ CREATE POLICY "Admins have full access to insights" ON public.insights
 -- ============================================
 
 -- Users can view their own journals
+DROP POLICY IF EXISTS "Users can view own journals" ON public.journals;
 CREATE POLICY "Users can view own journals" ON public.journals
   FOR SELECT USING (user_id = auth.uid());
 
 -- Users can view shared journals from their partner
+DROP POLICY IF EXISTS "Users can view partner shared journals" ON public.journals;
 CREATE POLICY "Users can view partner shared journals" ON public.journals
   FOR SELECT USING (
     is_shared = true
@@ -355,18 +386,22 @@ CREATE POLICY "Users can view partner shared journals" ON public.journals
   );
 
 -- Users can insert their own journals
+DROP POLICY IF EXISTS "Users can insert own journals" ON public.journals;
 CREATE POLICY "Users can insert own journals" ON public.journals
   FOR INSERT WITH CHECK (user_id = auth.uid());
 
 -- Users can update their own journals
+DROP POLICY IF EXISTS "Users can update own journals" ON public.journals;
 CREATE POLICY "Users can update own journals" ON public.journals
   FOR UPDATE USING (user_id = auth.uid());
 
 -- Users can delete their own journals
+DROP POLICY IF EXISTS "Users can delete own journals" ON public.journals;
 CREATE POLICY "Users can delete own journals" ON public.journals
   FOR DELETE USING (user_id = auth.uid());
 
 -- Admins can view all journals
+DROP POLICY IF EXISTS "Admins can view all journals" ON public.journals;
 CREATE POLICY "Admins can view all journals" ON public.journals
   FOR ALL USING (
     EXISTS (

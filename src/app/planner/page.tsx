@@ -22,7 +22,7 @@ export default function PlannerPage() {
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
-        type: 'date' as any,
+        type: 'date' as Event['type'],
         start_time: '',
         end_time: '',
         description: '',
@@ -30,6 +30,7 @@ export default function PlannerPage() {
 
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadData = async () => {
@@ -126,7 +127,7 @@ export default function PlannerPage() {
                             <label>Type</label>
                             <select
                                 value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value as Event['type'] })}
                             >
                                 {EVENT_TYPES.map(et => (
                                     <option key={et.value} value={et.value}>

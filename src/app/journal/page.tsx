@@ -18,6 +18,7 @@ export default function JournalPage() {
 
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadData = async () => {
@@ -125,7 +126,7 @@ export default function JournalPage() {
                 {journals.length === 0 ? (
                     <div className={styles.empty}>No journal entries yet. Start writing!</div>
                 ) : (
-                    journals.map((entry: any) => {
+                    journals.map((entry: Journal & { profiles: { full_name: string } }) => {
                         const isOwn = entry.user_id === profile?.id;
                         return (
                             <div key={entry.id} className={styles.journalCard}>
