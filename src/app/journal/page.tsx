@@ -9,7 +9,7 @@ import styles from './journal.module.css';
 export default function JournalPage() {
     const router = useRouter();
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [journals, setJournals] = useState<Journal[]>([]);
+    const [journals, setJournals] = useState<(Journal & { profiles: { full_name: string } })[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
         content: '',
@@ -52,7 +52,7 @@ export default function JournalPage() {
             .or(`user_id.eq.${userId},is_shared.eq.true`)
             .order('created_at', { ascending: false });
 
-        setJournals(data || []);
+        setJournals((data as (Journal & { profiles: { full_name: string } })[]) || []);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
