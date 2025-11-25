@@ -227,7 +227,7 @@ export default function MessagesPage() {
                 <div className={styles.modal}>
                     <div className={styles.modalContent}>
                         <h2>Choose a Better Way to Say It</h2>
-                        <p className={styles.subtitle}>Original: "{newMessage}"</p>
+                        <p className={styles.subtitle}>Original: &quot;{newMessage}&quot;</p>
 
                         <div className={styles.analysisGrid}>
                             <div className={styles.analysisInfo}>
@@ -253,7 +253,7 @@ export default function MessagesPage() {
                                         <h3>{index + 1}. {option.label}</h3>
                                     </div>
                                     <div className={styles.optionText}>
-                                        "{option.text}"
+                                        &quot;{option.text}&quot;
                                     </div>
                                     <div className={styles.optionExplanation}>
                                         <strong>Why this works:</strong>
