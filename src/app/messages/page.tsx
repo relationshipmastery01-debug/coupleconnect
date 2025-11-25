@@ -1,10 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, Profile, Message, MessageAnalysis } from '@/lib/supabase';
-import { analyzeMessage, AnalysisResult } from '@/lib/interpreter';
 import styles from './messages.module.css';
+
+type RewriteOption = {
+    label: string;
+    text: string;
+    explanation: string[];
+};
+
+type AnalysisResult = {
+    emotional_tone: string;
+    conflict_score: number;
+    detected_needs: string[];
+    rewrites: RewriteOption[];
+    guidance: string;
+    attachment_hints: string;
+};
 
 export default function MessagesPage() {
     const router = useRouter();
@@ -14,21 +28,21 @@ export default function MessagesPage() {
     const [showAnalysis, setShowAnalysis] = useState(false);
     const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
     const [loading, setLoading] = useState(true);
+    const [analyzing, setAnalyzing] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     useEffect(() => {
         loadData();
-        const subscription = supabase
-            .channel('messages')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
-                loadMessages();
-            })
-            .subscribe();
-
-        return () => {
-            subscription.unsubscribe();
-        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const loadData = async () => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -45,43 +59,75 @@ export default function MessagesPage() {
 
         setProfile(profileData);
         if (profileData?.relationship_id) {
-            await loadMessages();
+            await loadMessages(profileData.relationship_id);
+            subscribeToMessages(profileData.relationship_id);
         }
         setLoading(false);
     };
 
-    const loadMessages = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data: profileData } = await supabase
-            .from('profiles')
-            .select('relationship_id')
-            .eq('id', user?.id)
-            .single();
-
-        if (!profileData?.relationship_id) return;
-
+    const loadMessages = async (relationshipId: string) => {
         const { data } = await supabase
             .from('messages')
             .select('*, message_analysis(*), profiles(full_name)')
-            .eq('relationship_id', profileData.relationship_id)
+            .eq('relationship_id', relationshipId)
             .order('created_at', { ascending: true });
 
-        setMessages(data || []);
+        setMessages((data as any) || []);
     };
 
-    const handleSend = async () => {
-        if (!newMessage.trim() || !profile?.relationship_id) return;
+    const subscribeToMessages = (relationshipId: string) => {
+        supabase
+            .channel('messages_channel')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `relationship_id=eq.${relationshipId}`
+                },
+                async (payload) => {
+                    // Fetch the full message details including profile
+                    const { data } = await supabase
+                        .from('messages')
+                        .select('*, message_analysis(*), profiles(full_name)')
+                        .eq('id', payload.new.id)
+                        .single();
 
-        // Analyze message
-        const analysis = analyzeMessage(newMessage);
-        setCurrentAnalysis(analysis);
-        setShowAnalysis(true);
+                    if (data) {
+                        setMessages((prev) => [...prev, data as any]);
+                    }
+                }
+            )
+            .subscribe();
     };
 
-    const confirmSend = async (useRewrite: boolean) => {
+    const handleAnalyze = async () => {
+        if (!newMessage.trim()) return;
+        setAnalyzing(true);
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: newMessage }),
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            setCurrentAnalysis(data);
+            setShowAnalysis(true);
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            alert('AI Analysis failed. You can still send the message.');
+        } finally {
+            setAnalyzing(false);
+        }
+    };
+
+    const confirmSend = async (textToSend: string, analysisData?: AnalysisResult) => {
         if (!profile?.relationship_id) return;
-
-        const contentToSend = (useRewrite && currentAnalysis) ? currentAnalysis.calm_rewrite : newMessage;
 
         // Insert message
         const { data: msgData } = await supabase
@@ -89,28 +135,33 @@ export default function MessagesPage() {
             .insert({
                 relationship_id: profile.relationship_id,
                 sender_id: profile.id,
-                content: contentToSend,
+                content: textToSend,
             })
             .select()
             .single();
 
-        // Insert analysis
-        if (msgData && currentAnalysis) {
+        // Insert analysis if available
+        if (msgData && analysisData) {
             await supabase.from('message_analysis').insert({
                 message_id: msgData.id,
-                calm_rewrite: currentAnalysis.calm_rewrite,
-                emotional_tone: currentAnalysis.emotional_tone,
-                detected_needs: currentAnalysis.detected_needs,
-                nvc_rewrite: currentAnalysis.nvc_rewrite,
-                guidance: currentAnalysis.guidance,
-                conflict_score: currentAnalysis.conflict_score,
-                attachment_hints: currentAnalysis.attachment_hints,
+                calm_rewrite: analysisData.rewrites[0].text, // Default to first option for storage
+                emotional_tone: analysisData.emotional_tone,
+                detected_needs: analysisData.detected_needs,
+                nvc_rewrite: analysisData.rewrites[1].text, // Store second option as NVC
+                guidance: analysisData.guidance,
+                conflict_score: analysisData.conflict_score,
+                attachment_hints: analysisData.attachment_hints,
             });
         }
 
         setNewMessage('');
         setShowAnalysis(false);
         setCurrentAnalysis(null);
+
+        // Manually refresh messages to ensure UI updates immediately
+        if (profile?.relationship_id) {
+            loadMessages(profile.relationship_id);
+        }
     };
 
     if (loading) {
@@ -143,6 +194,7 @@ export default function MessagesPage() {
                             </div>
                         </div>
                     ))}
+                    <div ref={messagesEndRef} />
                 </div>
 
                 <div className={styles.inputArea}>
@@ -152,65 +204,79 @@ export default function MessagesPage() {
                         placeholder="Type your message..."
                         rows={3}
                     />
-                    <button onClick={handleSend} className="btn btn-primary">
-                        Analyze & Send
-                    </button>
+                    <div className={styles.inputActions}>
+                        <button
+                            onClick={() => confirmSend(newMessage)}
+                            className="btn btn-secondary"
+                            disabled={!newMessage.trim() || analyzing}
+                        >
+                            Send As Is
+                        </button>
+                        <button
+                            onClick={handleAnalyze}
+                            className="btn btn-primary"
+                            disabled={!newMessage.trim() || analyzing}
+                        >
+                            {analyzing ? 'Analyzing...' : '✨ Analyze & Improve'}
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {showAnalysis && currentAnalysis && (
                 <div className={styles.modal}>
                     <div className={styles.modalContent}>
-                        <h2>Emotional Analysis</h2>
+                        <h2>Choose a Better Way to Say It</h2>
+                        <p className={styles.subtitle}>Original: "{newMessage}"</p>
 
-                        <div className={styles.analysisSection}>
-                            <strong>Original Message:</strong>
-                            <p>{newMessage}</p>
-                        </div>
-
-                        <div className={styles.analysisSection}>
-                            <strong>Suggested Calm Rewrite:</strong>
-                            <p className={styles.rewrite}>{currentAnalysis.calm_rewrite}</p>
-                        </div>
-
-                        <div className={styles.analysisSection}>
-                            <strong>Emotional Tone:</strong>
-                            <p>{currentAnalysis.emotional_tone}</p>
-                        </div>
-
-                        <div className={styles.analysisSection}>
-                            <strong>Detected Needs:</strong>
-                            <p>{currentAnalysis.detected_needs.join(', ')}</p>
-                        </div>
-
-                        <div className={styles.analysisSection}>
-                            <strong>NVC Rewrite:</strong>
-                            <p className={styles.nvc}>{currentAnalysis.nvc_rewrite}</p>
-                        </div>
-
-                        <div className={styles.analysisSection}>
-                            <strong>Guidance for Partner:</strong>
-                            <p className={styles.guidance}>{currentAnalysis.guidance}</p>
-                        </div>
-
-                        <div className={styles.analysisSection}>
-                            <strong>Conflict Score:</strong>
-                            <div className={styles.conflictScore}>
-                                {currentAnalysis.conflict_score}/10
+                        <div className={styles.analysisGrid}>
+                            <div className={styles.analysisInfo}>
+                                <div className={styles.infoItem}>
+                                    <strong>Tone:</strong> {currentAnalysis.emotional_tone}
+                                </div>
+                                <div className={styles.infoItem}>
+                                    <strong>Conflict Score:</strong> {currentAnalysis.conflict_score}/10
+                                </div>
+                                <div className={styles.infoItem}>
+                                    <strong>Needs:</strong> {currentAnalysis.detected_needs.join(', ')}
+                                </div>
+                            </div>
+                            <div className={styles.guidanceBox}>
+                                💡 {currentAnalysis.guidance}
                             </div>
                         </div>
 
-                        <div className={styles.modalActions}>
-                            <button onClick={() => confirmSend(false)} className="btn btn-secondary">
-                                Send Original
-                            </button>
-                            <button onClick={() => confirmSend(true)} className="btn btn-primary">
-                                Send Calm Version
-                            </button>
-                            <button onClick={() => setShowAnalysis(false)} className="btn btn-secondary">
-                                Cancel
-                            </button>
+                        <div className={styles.optionsList}>
+                            {currentAnalysis.rewrites.map((option, index) => (
+                                <div key={index} className={styles.optionCard}>
+                                    <div className={styles.optionHeader}>
+                                        <h3>{index + 1}. {option.label}</h3>
+                                    </div>
+                                    <div className={styles.optionText}>
+                                        "{option.text}"
+                                    </div>
+                                    <div className={styles.optionExplanation}>
+                                        <strong>Why this works:</strong>
+                                        <ul>
+                                            {Array.isArray(option.explanation)
+                                                ? option.explanation.map((exp, i) => <li key={i}>{exp}</li>)
+                                                : <li>{option.explanation}</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                    <button
+                                        onClick={() => confirmSend(option.text, currentAnalysis)}
+                                        className="btn btn-primary full-width"
+                                    >
+                                        Select & Send This Version
+                                    </button>
+                                </div>
+                            ))}
                         </div>
+
+                        <button onClick={() => setShowAnalysis(false)} className="btn btn-secondary full-width margin-top">
+                            Cancel
+                        </button>
                     </div>
                 </div>
             )}
