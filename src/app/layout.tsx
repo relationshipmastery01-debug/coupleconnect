@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 };
 
 import FloatingFeedback from '@/components/FloatingFeedback';
+import NotificationListener from '@/components/NotificationListener';
 
 export default function RootLayout({
     children,
@@ -18,6 +19,7 @@ export default function RootLayout({
             <body>
                 {children}
                 <FloatingFeedback />
+                <NotificationListener />
             </body>
         </html>
     );

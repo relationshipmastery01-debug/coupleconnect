@@ -194,13 +194,27 @@ export default function PlannerPage() {
                                             <div className={styles.eventDescription}>{event.description}</div>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => deleteEvent(event.id)}
-                                        className={styles.deleteBtn}
-                                        title="Delete event"
-                                    >
-                                        ✕
-                                    </button>
+                                    <div className={styles.eventActions}>
+                                        <button
+                                            onClick={() => {
+                                                const startTime = new Date(event.start_time).toISOString().replace(/-|:|\.\d\d\d/g, "");
+                                                const endTime = new Date(event.end_time).toISOString().replace(/-|:|\.\d\d\d/g, "");
+                                                const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(event.description || '')}`;
+                                                window.open(url, '_blank');
+                                            }}
+                                            className={styles.calendarBtn}
+                                            title="Add to Google Calendar"
+                                        >
+                                            📅 Add to Calendar
+                                        </button>
+                                        <button
+                                            onClick={() => deleteEvent(event.id)}
+                                            className={styles.deleteBtn}
+                                            title="Delete event"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         })}
