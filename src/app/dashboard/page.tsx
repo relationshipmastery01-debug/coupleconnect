@@ -171,6 +171,12 @@ export default function DashboardPage() {
                         <div className={styles.actionTitle}>Insights</div>
                         <div className={styles.actionDesc}>View trends and suggestions</div>
                     </Link>
+
+                    <Link href="/feedback" className={styles.actionCard}>
+                        <div className={styles.actionIcon}>💭</div>
+                        <div className={styles.actionTitle}>Feedback</div>
+                        <div className={styles.actionDesc}>Help us improve</div>
+                    </Link>
                 </div>
             </div>
         </div>

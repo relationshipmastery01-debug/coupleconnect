@@ -16,6 +16,8 @@ export default function AdminPage() {
     const [pairData, setPairData] = useState({ user1: '', user2: '' });
     const [selectedCouple, setSelectedCouple] = useState<string | null>(null);
 
+    const [feedback, setFeedback] = useState<any[]>([]);
+
     useEffect(() => {
         loadData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,6 +44,19 @@ export default function AdminPage() {
         setProfile(profileData);
         await loadCouples();
         await loadUsers();
+        await loadFeedback();
+    };
+
+    const loadFeedback = async () => {
+        const { data } = await supabase
+            .from('feedback')
+            .select(`
+                *,
+                profiles (full_name, email)
+            `)
+            .order('created_at', { ascending: false });
+
+        setFeedback(data || []);
     };
 
     const loadCouples = async () => {
@@ -185,6 +200,28 @@ export default function AdminPage() {
                     </div>
                 </div>
             )}
+
+            <div className={styles.section}>
+                <h2>User Feedback ({feedback.length})</h2>
+                {feedback.length === 0 ? (
+                    <div className={styles.empty}>No feedback yet.</div>
+                ) : (
+                    <div className={styles.couplesList}>
+                        {feedback.map((item) => (
+                            <div key={item.id} className={styles.coupleCard} style={{ padding: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                    <strong>{item.profiles?.full_name || 'Anonymous'}</strong>
+                                    <span style={{ color: '#ffd700' }}>{'★'.repeat(item.rating)}</span>
+                                </div>
+                                <p style={{ margin: '10px 0', lineHeight: '1.5', color: '#eee' }}>"{item.content}"</p>
+                                <div style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
+                                    {new Date(item.created_at).toLocaleDateString()} at {new Date(item.created_at).toLocaleTimeString()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             <div className={styles.section}>
                 <h2>All Couples ({couples.length})</h2>
