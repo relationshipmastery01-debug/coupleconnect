@@ -213,7 +213,7 @@ export default function AdminPage() {
                                     <strong>{item.profiles?.full_name || 'Anonymous'}</strong>
                                     <span style={{ color: '#ffd700' }}>{'★'.repeat(item.rating)}</span>
                                 </div>
-                                <p style={{ margin: '10px 0', lineHeight: '1.5', color: '#eee' }}>"{item.content}"</p>
+                                <p style={{ margin: '10px 0', lineHeight: '1.5', color: '#eee' }}>&quot;{item.content}&quot;</p>
                                 <div style={{ fontSize: '12px', color: '#888', marginTop: '10px' }}>
                                     {new Date(item.created_at).toLocaleDateString()} at {new Date(item.created_at).toLocaleTimeString()}
                                 </div>

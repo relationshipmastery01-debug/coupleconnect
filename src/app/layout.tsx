@@ -6,6 +6,8 @@ export const metadata: Metadata = {
     description: 'A private relationship-strengthening platform for couples with emotional intelligence, habit tracking, and shared planning.',
 };
 
+import FloatingFeedback from '@/components/FloatingFeedback';
+
 export default function RootLayout({
     children,
 }: {
@@ -13,7 +15,10 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-            <body>{children}</body>
+            <body>
+                {children}
+                <FloatingFeedback />
+            </body>
         </html>
     );
 }
