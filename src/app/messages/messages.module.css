@@ -361,3 +361,68 @@
         max-height: 85vh;
     }
 }
+
+.feedbackSection {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.feedbackLabel {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.feedbackButtons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.feedbackBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--color-text);
+}
+
+.feedbackBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.feedbackBtn.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.feedbackInput {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.feedbackSubmit {
+    background: var(--color-secondary);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    align-self: flex-end;
+}

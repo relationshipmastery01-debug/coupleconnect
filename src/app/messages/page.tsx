@@ -29,7 +29,27 @@ export default function MessagesPage() {
     const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [analyzing, setAnalyzing] = useState(false);
+    const [feedbackRating, setFeedbackRating] = useState(0);
+    const [feedbackText, setFeedbackText] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const submitFeedback = async () => {
+        if (!profile || feedbackRating === 0) return;
+
+        const { error } = await supabase.from('feedback').insert({
+            user_id: profile.id,
+            rating: feedbackRating,
+            content: `[Analysis Feedback] ${feedbackText} (Context: ${newMessage.substring(0, 50)}...)`
+        });
+
+        if (!error) {
+            alert('Thanks for your feedback!');
+            setFeedbackRating(0);
+            setFeedbackText('');
+        } else {
+            alert('Failed to save feedback.');
+        }
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -272,6 +292,41 @@ export default function MessagesPage() {
                                     </button>
                                 </div>
                             ))}
+                        </div>
+
+                        <div className={styles.feedbackSection}>
+                            <div className={styles.feedbackLabel}>Was this analysis helpful?</div>
+                            <div className={styles.feedbackButtons}>
+                                <button
+                                    className={`${styles.feedbackBtn} ${feedbackRating === 5 ? styles.active : ''}`}
+                                    onClick={() => setFeedbackRating(5)}
+                                >
+                                    👍 Yes
+                                </button>
+                                <button
+                                    className={`${styles.feedbackBtn} ${feedbackRating === 1 ? styles.active : ''}`}
+                                    onClick={() => setFeedbackRating(1)}
+                                >
+                                    👎 No
+                                </button>
+                            </div>
+                            {(feedbackRating !== 0) && (
+                                <div style={{ display: 'flex', gap: '5px', flexDirection: 'column' }}>
+                                    <input
+                                        type="text"
+                                        className={styles.feedbackInput}
+                                        placeholder={feedbackRating === 1 ? "What was wrong?" : "Any other notes?"}
+                                        value={feedbackText}
+                                        onChange={(e) => setFeedbackText(e.target.value)}
+                                    />
+                                    <button
+                                        className={styles.feedbackSubmit}
+                                        onClick={submitFeedback}
+                                    >
+                                        Submit Feedback
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <button onClick={() => setShowAnalysis(false)} className="btn btn-secondary full-width margin-top">
